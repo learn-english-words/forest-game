@@ -141,11 +141,15 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
 <style>
 #settings{position:fixed;inset:0;z-index:80;background:#07130de8;display:none;align-items:center;justify-content:center;color:#f2e9d8} .settings-card{width:min(440px,92vw);background:#172a21;border:1px solid #e8a33d77;border-radius:18px;padding:28px;box-shadow:0 20px 100px #0008} .settings-card h2{color:#e8a33d;margin-top:0} .settings-card label{display:block;margin:22px 0 10px}.settings-card select,.settings-card button{width:100%;padding:12px;border-radius:8px;font:inherit;background:#e8a33d;border:0;color:#21190c}.settings-card input{width:100%;accent-color:#e8a33d} #settings-open{position:fixed;left:18px;top:65px;z-index:30;padding:10px 16px;background:#172a21dd;color:#f2e9d8;border:1px solid #e8a33d77;border-radius:8px;font:inherit;cursor:pointer}#asset-status{font-size:13px;color:#e8a33d}
-</style></head>
+</style><script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/BufferGeometryUtils.js"></script>
+<style>#loading-note{color:#e8a33d;font-size:14px}button:disabled{opacity:.45;cursor:wait}#intro .credits{font-size:11px;max-width:620px;margin-top:22px;line-height:1.6}.credits a{color:#e8a33d}.settings-card{max-height:90vh;overflow:auto}.settings-card .credits{font-size:11px;line-height:1.6}#forest-note{font-size:13px;color:#d6be83}</style>
+<link rel="stylesheet" href="survival.css">
+</head>
 <body>
 
 <button id="settings-open">الإعدادات · V</button>
-<div id="settings" role="dialog" aria-modal="true" aria-labelledby="settings-title"><div class="settings-card"><h2 id="settings-title">إعدادات الرحلة</h2><p>اللعبة متوقفة مؤقتًا</p><label for="perspective">منظور الكاميرا</label><select id="perspective"><option value="third">منظور ثالث — خلف الشخصية</option><option value="first">منظور أول — من عيون الشخصية</option></select><label for="sensitivity">حساسية الماوس</label><input id="sensitivity" type="range" min="0.5" max="2" step="0.1" value="1"><label for="volume">الصوت</label><input id="volume" type="range" min="0" max="1" step="0.05" value="0.5"><p id="asset-status">جارٍ تحميل الشخصية والحركات…</p><button id="settings-close">حفظ والعودة للعبة</button></div></div>
+<div id="settings" role="dialog" aria-modal="true" aria-labelledby="settings-title"><div class="settings-card"><h2 id="settings-title">إعدادات الرحلة</h2><p>اللعبة متوقفة مؤقتًا</p><label for="perspective">منظور الكاميرا</label><select id="perspective"><option value="third">منظور ثالث — خلف الشخصية</option><option value="first">منظور أول — من عيون الشخصية</option></select><label for="sensitivity">حساسية الماوس</label><input id="sensitivity" type="range" min="0.5" max="2" step="0.1" value="1"><label for="volume">الصوت</label><input id="volume" type="range" min="0" max="1" step="0.05" value="0.5"><p id="forest-note">جارٍ تحميل الغابة…</p><div class="credits">الغابة: <a href="https://sketchfab.com/3d-models/a-forest-3-with-a-road-at-night-for-game-61f8c7817fe6457fb26e4814cfc48a3f" target="_blank" rel="noopener">a forest (3) with a road at night for game</a> — <a href="https://sketchfab.com/dasy444" target="_blank" rel="noopener">dasy444</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a><br>تعديلاتنا: المقياس والخامات، تجميع النباتات للأداء، وإضافة تفاعل الأشجار والتصادمات. <a href="FOREST-LICENSE.txt" target="_blank" rel="noopener">الرخصة الأصلية</a></div><p id="asset-status">جارٍ تحميل الشخصية والحركات…</p><button id="settings-close">حفظ والعودة للعبة</button></div></div>
 <div id="crosshair"></div>
 
 <div id="hud-top-left">
@@ -169,16 +173,16 @@
 <div id="save-toast">تم حفظ التقدم</div>
 
 <div id="intro">
-  <h1>الغابة</h1>
+  <h1>الغابة</h1><p id="loading-note" role="status">جارٍ تجهيز الغابة والشخصية… أول تحميل قد يستغرق دقيقة.</p>
   <p>استيقظت وحيدًا بين الأشجار. اجمع الخشب، اصطد لتأكل، ابنِ نارًا ومأوى، وابقَ حيًا لأطول فترة ممكنة.</p>
-  <div class="keys">
+  <div class="credits">الغابة: <a href="https://sketchfab.com/3d-models/a-forest-3-with-a-road-at-night-for-game-61f8c7817fe6457fb26e4814cfc48a3f" target="_blank" rel="noopener">a forest (3) with a road at night for game</a> — <a href="https://sketchfab.com/dasy444" target="_blank" rel="noopener">dasy444</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a><br>تعديلاتنا: المقياس والخامات، تجميع النباتات للأداء، وإضافة تفاعل الأشجار والتصادمات. <a href="FOREST-LICENSE.txt" target="_blank" rel="noopener">الرخصة الأصلية</a></div><div class="keys">
     <div class="key">W A S D — تحرك · Shift — ركض · V — إعدادات</div>
     <div class="key">الفأرة — النظر حولك</div>
-    <div class="key">E — قطع / صيد</div>
-    <div class="key">F — أكل</div>
-    <div class="key">1 — ابنِ نار (5 خشب)</div>
-    <div class="key">2 — ابنِ مأوى (12 خشب)</div>
-    <div class="key">R — نم بجانب المأوى</div>
+    <div class="key">E — جمع / قطع / صيد / تفاعل</div>
+    <div class="key">F — أكل اللحم المطبوخ</div>
+    <div class="key">Tab — الحقيبة وصناعة الأدوات</div>
+    <div class="key">B — البناء · زر الفأرة — تثبيت</div>
+    <div class="key">R — تدوير البناء · Esc — إلغاء</div>
   </div>
   <div class="btn-row">
     <button id="continue-btn" style="display:none;">تابع من حيث توقفت</button>
@@ -214,10 +218,10 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.body.appendChild(renderer.domElement);
 
-const DAY_COLOR = new THREE.Color(0x9fcbe8);
+const DAY_COLOR = new THREE.Color(0x9baeb0);
 const NIGHT_COLOR = new THREE.Color(0x0d1b2e);
 scene.background = DAY_COLOR.clone();
-scene.fog = new THREE.Fog(DAY_COLOR.getHex(), 15, 90);
+scene.fog = new THREE.Fog(DAY_COLOR.getHex(), 24, 105);
 
 /* Lights */
 const hemi = new THREE.HemisphereLight(0xbfd8ff, 0x2e3a20, 0.9);
@@ -232,6 +236,11 @@ const groundMat = new THREE.MeshStandardMaterial({ color:0x3c5a3a, roughness:1 }
 const ground = new THREE.Mesh(groundGeo, groundMat);
 ground.rotation.x = -Math.PI/2;
 scene.add(ground);
+ground.visible=false;
+let forestReady=false, terrainMesh=null;
+const mapBounds={minX:-70,maxX:70,minZ:-70,maxZ:70};
+const terrainCells=new Map(), terrainCellSize=3;
+const terrainRay=new THREE.Raycaster();
 
 /* ============ AUDIO ENGINE (synthesized, no external files) ============ */
 const Audio = {
@@ -356,7 +365,7 @@ function closeSettings(){settingsOpen=false;document.getElementById('settings').
 document.getElementById('settings-open').onclick=openSettings;
 document.getElementById('settings-close').onclick=closeSettings;
 for(const k of ['perspective','sensitivity','volume']){const el=document.getElementById(k);el.value=preferences[k];el.oninput=()=>{preferences[k]=k==='perspective'?el.value:Number(el.value);if(Audio.masterGain)Audio.masterGain.gain.value=preferences.volume;};}
-window.addEventListener('keydown',e=>{if(e.code==='KeyV'&&!e.repeat){e.preventDefault();settingsOpen?closeSettings():openSettings();}},true);
+window.addEventListener('keydown',e=>{if(e.code==='KeyV'&&!e.repeat){if(window.closeSurvivalPanel)window.closeSurvivalPanel(false);e.preventDefault();settingsOpen?closeSettings():openSettings();}},true);
 window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false;if(state.started&&!state.gameOver)openSettings();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&state.started&&!state.gameOver)openSettings();});
 renderer.domElement.addEventListener('click', () => {
@@ -430,33 +439,15 @@ function makeAnimal(x, z) {
     ear.position.set(s*0.08, 0.7, 0.5);
     group.add(ear);
   }
-  group.position.set(x, 0, z);
+  const floor=heightAt(x,z) ?? 0;
+  group.position.set(x, floor, z);
   scene.add(group);
 
   animals.push({
-    mesh: group, pos: new THREE.Vector3(x,0,z),
+    mesh: group, pos: new THREE.Vector3(x,floor,z),
     dir: rng()*Math.PI*2, timer: rng()*3,
     radius: 0.5
   });
-}
-
-/* Scatter trees deterministically (seeded) so chopped-tree saves stay valid */
-let treeIdCounter = 0;
-for (let i=0; i<55; i++) {
-  let x, z;
-  do {
-    x = (rng()-0.5) * 100;
-    z = (rng()-0.5) * 100;
-  } while (Math.hypot(x,z) < 6);
-  makeTree(x, z, treeIdCounter++);
-}
-for (let i=0; i<7; i++) {
-  let x, z;
-  do {
-    x = (rng()-0.5) * 80;
-    z = (rng()-0.5) * 80;
-  } while (Math.hypot(x,z) < 8);
-  makeAnimal(x, z);
 }
 
 /* ============ PARTICLES (chop chips / hunt burst) ============ */
@@ -505,10 +496,12 @@ function findClearSpot(baseDistance) {
   ];
   for (const offset of candidates) {
     const p = player.pos.clone().add(offset);
-    p.y = 0;
+    const y=heightAt(p.x,p.z);if(y===null)continue;p.y=y;
+    const corners=[[-1,-1],[-1,1],[1,-1],[1,1]].map(([x,z])=>heightAt(p.x+x,p.z+z));
+    if(corners.some(h=>h===null||Math.abs(h-y)>0.45))continue;
     let blocked = false;
     for (const o of obstacles) {
-      if (o.pos.distanceTo(p) < o.radius + 0.9) { blocked = true; break; }
+      if (Math.hypot(o.pos.x-p.x,o.pos.z-p.z) < o.radius + 0.9) { blocked = true; break; }
     }
     if (!blocked) return p;
   }
@@ -573,7 +566,7 @@ function buildStructure(type) {
     roof.rotation.y = Math.PI/4;
     mesh.add(roof);
   }
-  mesh.position.set(placePos.x, 0, placePos.z);
+  mesh.position.copy(placePos);
   scene.add(mesh);
 
   const s = { type, pos:placePos.clone(), mesh, light };
@@ -600,7 +593,7 @@ function isNearCampfire(range) {
 /* ============ STATE ============ */
 const state = {
   started:false, gameOver:false,
-  wood:0, food:0,
+  wood:0, food:0, stone:0, fiber:0, rawMeat:0, tool:0,
   energy:100, hunger:0,
   dayTime: 0.25,
   survivedSeconds: 0
@@ -620,22 +613,14 @@ const ui = {
 };
 
 /* ============ SAVE / LOAD ============ */
-const SAVE_KEY = 'forestSurvivalSave_v1';
+const SAVE_KEY = 'forestSurvivalSave_forest_v2';
 
 function saveGame() {
-  if (!state.started || state.gameOver) return;
-  const data = {
-    wood: state.wood, food: state.food,
-    energy: state.energy, hunger: state.hunger,
-    dayTime: state.dayTime, survivedSeconds: state.survivedSeconds,
-    playerX: player.pos.x, playerZ: player.pos.z, yaw: player.yaw,
-    choppedTreeIds: trees.filter(t=>t.chopped).map(t=>t.id),
-    structures: structures.map(s => ({ type:s.type, x:s.pos.x, z:s.pos.z }))
-  };
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-    flashSaveToast();
-  } catch(e) { /* storage unavailable, ignore silently */ }
+ if(!state.started||state.gameOver)return;
+ const data={version:3,wood:state.wood,food:state.food,stone:state.stone,fiber:state.fiber,rawMeat:state.rawMeat,tool:state.tool,energy:state.energy,hunger:state.hunger,dayTime:state.dayTime,survivedSeconds:state.survivedSeconds,playerX:player.pos.x,playerZ:player.pos.z,yaw:player.yaw,
+ choppedTreeIds:trees.filter(t=>t.chopped).map(t=>t.id),treeHealth:trees.filter(t=>!t.chopped&&t.hp<6).map(t=>[t.id,t.hp]),collected:typeof collectedResources!=='undefined'?[...collectedResources]:[],
+ structures:structures.map(s=>({type:s.type,x:s.pos.x,y:s.pos.y,z:s.pos.z,rotation:s.rotation||0,open:!!s.open,queue:s.queue||[],ready:s.ready||0}))};
+ try{localStorage.setItem(SAVE_KEY,JSON.stringify(data));flashSaveToast();}catch(e){showFeedback('تعذر الحفظ في هذا المتصفح');}
 }
 
 function flashSaveToast() {
@@ -645,41 +630,16 @@ function flashSaveToast() {
 }
 
 function loadGame() {
-  let raw;
-  try { raw = localStorage.getItem(SAVE_KEY); } catch(e) { return false; }
-  if (!raw) return false;
-  let data;
-  try { data = JSON.parse(raw); } catch(e) { return false; }
-
-  state.wood = data.wood ?? 0;
-  state.food = data.food ?? 0;
-  state.energy = data.energy ?? 100;
-  state.hunger = data.hunger ?? 0;
-  state.dayTime = data.dayTime ?? 0.25;
-  state.survivedSeconds = data.survivedSeconds ?? 0;
-  player.pos.x = data.playerX ?? 0;
-  player.pos.z = data.playerZ ?? 0;
-  player.yaw = data.yaw ?? 0;
-
-  (data.choppedTreeIds || []).forEach(id => {
-    const t = trees.find(tr => tr.id === id);
-    if (t && !t.chopped) {
-      t.chopped = true;
-      scene.remove(t.mesh);
-      const oi = obstacles.findIndex(o => o.pos === t.pos);
-      if (oi > -1) obstacles.splice(oi, 1);
-    }
-  });
-  (data.structures || []).forEach(s => {
-    // temporarily move player so buildStructure's forward-offset placement doesn't matter
-    const saved = player.pos.clone(), savedYaw = player.yaw;
-    player.pos.set(s.x, 0, s.z);
-    player.yaw = 0;
-    // place directly without the forward offset used during normal play
-    forcePlaceStructure(s.type, s.x, s.z);
-    player.pos.copy(saved); player.yaw = savedYaw;
-  });
-  return true;
+ let data;try{data=JSON.parse(localStorage.getItem(SAVE_KEY));}catch(e){return false;}if(!data||typeof data!=='object')return false;
+ for(const key of ['wood','food','stone','fiber','rawMeat','tool','energy','hunger','dayTime','survivedSeconds'])if(Number.isFinite(data[key]))state[key]=Math.max(0,data[key]);
+ state.tool=Math.min(2,Math.floor(state.tool));state.energy=Math.min(100,state.energy);state.hunger=Math.min(100,state.hunger);
+ if(Number.isFinite(data.playerX)&&Number.isFinite(data.playerZ)&&heightAt(data.playerX,data.playerZ)!==null){player.pos.x=data.playerX;player.pos.z=data.playerZ;}
+ player.yaw=Number.isFinite(data.yaw)?data.yaw:0;
+ for(const id of data.choppedTreeIds||[]){const t=trees.find(t=>t.id===id);if(t&&!t.chopped){t.chopped=true;t.mesh.parent.remove(t.mesh);const i=obstacles.findIndex(o=>o.pos===t.pos);if(i>=0)obstacles.splice(i,1);}}
+ for(const [id,hp]of data.treeHealth||[]){const t=trees.find(t=>t.id===id);if(t&&!t.chopped&&hp>0&&hp<=6)t.hp=hp;}
+ for(const record of data.structures||[]){if(window.restoreBuild)restoreBuild(record);else forcePlaceStructure(record.type,record.x,record.z);}
+ if(window.restoreCollected)restoreCollected(data.collected||[]);
+ if(window.refreshTool)refreshTool();player.pos.y=(heightAt(player.pos.x,player.pos.z)??0)+1.7;return true;
 }
 
 function forcePlaceStructure(type, x, z) {
@@ -701,9 +661,9 @@ function forcePlaceStructure(type, x, z) {
     const roof = new THREE.Mesh(new THREE.ConeGeometry(1.3,1.1,4), new THREE.MeshStandardMaterial({ color:0x6b5636, roughness:1 }));
     roof.position.y = 1.0; roof.rotation.y = Math.PI/4; mesh.add(roof);
   }
-  mesh.position.set(x, 0, z);
+  mesh.position.set(x, heightAt(x,z) ?? 0, z);
   scene.add(mesh);
-  const s = { type, pos:new THREE.Vector3(x,0,z), mesh, light };
+  const s = { type, pos:new THREE.Vector3(x,heightAt(x,z) ?? 0,z), mesh, light };
   structures.push(s);
   obstacles.push({ pos: s.pos, radius: 1.0 });
 }
@@ -715,9 +675,11 @@ const hasSave = (() => {
 if (hasSave) document.getElementById('continue-btn').style.display = 'inline-block';
 
 function beginPlay(fromSave) {
+  if(!forestReady)return;
   Audio.init();
   Audio.masterGain.gain.value=preferences.volume;
   if (fromSave) loadGame();
+  player.pos.y=heightAt(player.pos.x,player.pos.z)+1.7;
   ui.intro.style.display = 'none';
   state.started = true;
   camera.position.copy(player.pos);
@@ -749,15 +711,15 @@ function findNearestInteractable() {
 }
 
 function chopTree(t) {
-  t.hp -= 1;
-  const gained = 1 + Math.floor(Math.random()*2);
+  t.hp -= state.tool===2 ? 3 : state.tool===1 ? 2 : 1;
+  const gained = state.tool===2 ? 3 : state.tool===1 ? 2 : 1;
   state.wood += gained;
-  t.mesh.rotation.z = (Math.random()-0.5)*0.08;
+  // Preserve imported tree transforms while chopping.
   spawnParticles(t.pos, 0x6b4a2f, 5, 1.5);
   axeSwing = 0.25;
   if (t.hp <= 0) {
     t.chopped = true;
-    scene.remove(t.mesh);
+    t.mesh.removeFromParent ? t.mesh.removeFromParent() : t.mesh.parent.remove(t.mesh);
     state.wood += 1;
     const oi = obstacles.findIndex(o => o.pos === t.pos);
     if (oi > -1) obstacles.splice(oi, 1);
@@ -768,7 +730,7 @@ function chopTree(t) {
 }
 
 function huntAnimal(a) {
-  state.food += 2 + Math.floor(Math.random()*2);
+  state.rawMeat += 2 + Math.floor(Math.random()*2);
   spawnParticles(a.pos, 0xa9805a, 6, 1.8);
   scene.remove(a.mesh);
   const idx = animals.indexOf(a);
@@ -776,47 +738,10 @@ function huntAnimal(a) {
   Audio.hunt();
 }
 
-window.addEventListener('keydown', (e) => {
-  if (!state.started || state.gameOver || settingsOpen || e.repeat) return;
-  if (e.code === 'KeyE') {
-    const near = findNearestInteractable();
-    if (near) {
-      if (near.type === 'tree') chopTree(near.obj);
-      else huntAnimal(near.obj);
-    }
-  }
-  if (e.code === 'KeyF') {
-    if (state.food > 0) {
-      state.food -= 1;
-      state.hunger = Math.max(0, state.hunger - 40);
-      state.energy = Math.min(100, state.energy + 8);
-      Audio.eat();
-    }
-  }
-  if (e.code === 'Digit1') buildStructure('campfire');
-  if (e.code === 'Digit2') buildStructure('shelter');
-  if (e.code === 'KeyR') {
-    const shelter = nearestShelter(3.2);
-    if (shelter) {
-      state.dayTime = 0.25; // jump to morning
-      state.energy = 100;
-      state.hunger = Math.min(100, state.hunger + 15);
-      flashSaveToast(); // reuse toast styling for feedback text swap below
-      ui.saveToast.textContent = 'استيقظت في الصباح';
-      setTimeout(()=>{ ui.saveToast.textContent = 'تم حفظ التقدم'; }, 1300);
-    }
-  }
-});
-
 /* Occasional animal respawn to keep the loop alive */
 setInterval(() => {
   if (state.started && !state.gameOver && !settingsOpen && animals.length < 6) {
-    let x, z;
-    do {
-      x = (Math.random()-0.5) * 90;
-      z = (Math.random()-0.5) * 90;
-    } while (Math.hypot(x - player.pos.x, z - player.pos.z) < 10);
-    makeAnimal(x, z);
+    const spot=randomForestSpot(10);if(spot)makeAnimal(spot.x,spot.z);
   }
 }, 9000);
 
@@ -835,11 +760,10 @@ function updateAnimals(dt) {
       a.dir = Math.atan2(away.x, away.y);
       speed = 2.6;
     }
-    a.pos.x += Math.sin(a.dir) * speed * dt;
-    a.pos.z += Math.cos(a.dir) * speed * dt;
-    a.pos.x = Math.max(-115, Math.min(115, a.pos.x));
-    a.pos.z = Math.max(-115, Math.min(115, a.pos.z));
-    a.mesh.position.set(a.pos.x, 0, a.pos.z);
+    const nx=a.pos.x+Math.sin(a.dir)*speed*dt,nz=a.pos.z+Math.cos(a.dir)*speed*dt;
+    const floor=heightAt(nx,nz);
+    if(floor!==null&&!obstacles.some(o=>Math.hypot(o.pos.x-nx,o.pos.z-nz)<o.radius+0.3)){a.pos.set(nx,floor,nz);}else{a.dir+=Math.PI*0.6;}
+    a.mesh.position.copy(a.pos);
     a.mesh.rotation.y = a.dir;
   }
 }
@@ -856,18 +780,15 @@ function updatePlayer(dt) {
   if (keys['KeyA']) move.sub(right);
 
   const isMoving = move.lengthSq() > 0;
+  let actuallyMoving=false;
   if (isMoving) {
     move.normalize().multiplyScalar(player.speed * (keys.ShiftLeft || keys.ShiftRight ? 1.5 : 1) * dt);
     const next = player.pos.clone().add(move);
-    let blocked = false;
-    for (const o of obstacles) {
-      if (o.pos.distanceTo(new THREE.Vector3(next.x,0,next.z)) < (o.radius + player.radius)) {
-        blocked = true; break;
-      }
-    }
+    let blocked = window.isWorldBlocked ? isWorldBlocked(next.x,next.z) : false;
+    const floor=heightAt(next.x,next.z);
+    if(floor===null || Math.abs(floor-(player.pos.y-1.7))>Math.max(0.5,move.length()*1.1))blocked=true;
     if (!blocked) {
-      next.x = Math.max(-118, Math.min(118, next.x));
-      next.z = Math.max(-118, Math.min(118, next.z));
+      player.pos.y=floor+1.7;actuallyMoving=true;
       player.pos.x = next.x;
       player.pos.z = next.z;
     }
@@ -882,18 +803,18 @@ function updatePlayer(dt) {
   camera.rotation.order = 'YXZ';
   camera.rotation.y = player.yaw;
   camera.rotation.x = player.pitch;
-  updateAvatar(dt,isMoving);
-  axeGroup.visible=preferences.perspective==='first';
+  updateAvatar(dt,actuallyMoving);
+  axeGroup.visible=preferences.perspective==='first' && state.tool>0;
   if(avatar)avatar.visible=preferences.perspective==='third';
   if(preferences.perspective==='third'){
-    const target=new THREE.Vector3(player.pos.x,1.45,player.pos.z);
+    const target=new THREE.Vector3(player.pos.x,player.pos.y-0.25,player.pos.z);
     const back=new THREE.Vector3(0,0,1).applyEuler(camera.rotation);
     let distance=4.3;
     cameraRay.set(target,back);
-    const hits=cameraRay.intersectObjects([...trees.filter(t=>!t.chopped).map(t=>t.mesh),...structures.map(t=>t.mesh),ground],true);
+    const hits=cameraRay.intersectObjects([...trees.filter(t=>!t.chopped).map(t=>t.mesh),...structures.map(t=>t.mesh),terrainMesh||ground],true);
     if(hits.length)distance=Math.max(0.25,Math.min(distance,hits[0].distance-0.25));
     camera.position.copy(target).addScaledVector(back,distance);
-    camera.position.y=Math.max(0.3,camera.position.y);
+    camera.position.y=Math.max((heightAt(camera.position.x,camera.position.z) ?? player.pos.y-1.7)+0.3,camera.position.y);
   }
 
   if (axeSwing > 0) {
@@ -906,8 +827,8 @@ function updatePlayer(dt) {
 
 /* ============ SURVIVAL STATS ============ */
 function updateSurvival(dt) {
-  state.hunger = Math.min(100, state.hunger + dt * 1.4);
-  let drain = state.hunger >= 100 ? 6 : 1.1;
+  state.hunger = Math.min(100, state.hunger + dt * 0.22);
+  let drain = state.hunger >= 100 ? 1.5 : 0.12;
   if (isNearCampfire(5)) drain = Math.max(0, drain - 1.6); // fire slows the drain, more so at night
   state.energy = Math.max(0, state.energy - dt * drain);
   state.survivedSeconds += dt;
@@ -934,7 +855,8 @@ function updateDayNight(dt) {
   hemi.intensity = 0.25 + t * 0.75;
   sun.intensity = 0.15 + t * 0.95;
   const angle = state.dayTime * Math.PI * 2;
-  sun.position.set(Math.cos(angle)*40, Math.max(5, Math.sin(angle)*40), 15);
+  sun.position.set(player.pos.x+Math.cos(angle)*40, player.pos.y+Math.max(12, Math.sin(angle)*50), player.pos.z+20);
+  sun.target.position.set(player.pos.x,player.pos.y-1.7,player.pos.z);sun.target.updateMatrixWorld();
 }
 
 /* ============ CAMPFIRE FLICKER ============ */
@@ -976,6 +898,81 @@ function syncUI() {
   ui.buildHint.style.opacity = (hints.length && !state.gameOver) ? '0.9' : '0';
 }
 
+/* Terrain acceleration grid: movement and construction follow the real hills. */
+function makeTerrainGrid(){
+ const geometry=terrainMesh.geometry,position=geometry.attributes.position,index=geometry.index;
+ const a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();
+ for(let i=0;i<(index?index.count:position.count);i+=3){
+  [a,b,c].forEach((v,k)=>v.fromBufferAttribute(position,index?index.getX(i+k):i+k).applyMatrix4(terrainMesh.matrixWorld));
+  const denominator=(b.z-c.z)*(a.x-c.x)+(c.x-b.x)*(a.z-c.z);if(Math.abs(denominator)<1e-8)continue;
+  const tri={a:a.clone(),b:b.clone(),c:c.clone(),denominator};
+  for(let x=Math.floor(Math.min(a.x,b.x,c.x)/terrainCellSize);x<=Math.floor(Math.max(a.x,b.x,c.x)/terrainCellSize);x++)
+   for(let z=Math.floor(Math.min(a.z,b.z,c.z)/terrainCellSize);z<=Math.floor(Math.max(a.z,b.z,c.z)/terrainCellSize);z++){
+    const key=x+','+z;if(!terrainCells.has(key))terrainCells.set(key,[]);terrainCells.get(key).push(tri);
+   }
+ }
+}
+function heightAt(x,z){
+ if(!terrainMesh)return 0;
+ if(x<mapBounds.minX||x>mapBounds.maxX||z<mapBounds.minZ||z>mapBounds.maxZ)return null;
+ const candidates=terrainCells.get(Math.floor(x/terrainCellSize)+','+Math.floor(z/terrainCellSize))||[];
+ let height=null;
+ for(const {a,b,c,denominator}of candidates){const u=((b.z-c.z)*(x-c.x)+(c.x-b.x)*(z-c.z))/denominator;const v=((c.z-a.z)*(x-c.x)+(a.x-c.x)*(z-c.z))/denominator;
+  if(u>=-1e-5&&v>=-1e-5&&u+v<=1.00001){const h=u*a.y+v*b.y+(1-u-v)*c.y;height=height===null?h:Math.max(height,h);}
+ }return height;
+}
+function randomForestSpot(minDistance=0){
+ for(let i=0;i<100;i++){const x=mapBounds.minX+2+Math.random()*(mapBounds.maxX-mapBounds.minX-4),z=mapBounds.minZ+2+Math.random()*(mapBounds.maxZ-mapBounds.minZ-4),y=heightAt(x,z);
+  if(y!==null&&Math.hypot(x-player.pos.x,z-player.pos.z)>=minDistance&&!obstacles.some(o=>Math.hypot(x-o.pos.x,z-o.pos.z)<o.radius+1))return new THREE.Vector3(x,y,z);
+ }return null;
+}
+async function loadForest(){
+ const imported=await new THREE.GLTFLoader().loadAsync('forest.gltf');
+ const model=imported.scene;
+ model.traverse(o=>{if(o.isMesh&&o.material.name==='Material.003')terrainMesh=o;});
+ if(!terrainMesh)throw Error('Terrain missing');
+ model.updateMatrixWorld(true);
+ const originalBox=new THREE.Box3().setFromObject(terrainMesh),center=originalBox.getCenter(new THREE.Vector3());
+ const scale=150/(originalBox.max.x-originalBox.min.x);
+ model.scale.setScalar(scale);model.position.set(-center.x*scale,-originalBox.min.y*scale,-center.z*scale);scene.add(model);model.updateMatrixWorld(true);
+ const terrainBox=new THREE.Box3().setFromObject(terrainMesh);
+ Object.assign(mapBounds,{minX:terrainBox.min.x+0.8,maxX:terrainBox.max.x-0.8,minZ:terrainBox.min.z+0.8,maxZ:terrainBox.max.z-0.8});
+ makeTerrainGrid();terrainMesh.receiveShadow=true;terrainMesh.material.roughness=0.94;
+ let root=null;model.traverse(o=>{if(o.name==='RootNode')root=o;});if(!root)throw Error('Forest hierarchy missing');
+ const batches=new Map();let treeId=0;
+ for(const object of [...root.children]){
+  if(object===terrainMesh.parent||object===terrainMesh)continue;
+  const box=new THREE.Box3().setFromObject(object),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
+  if(heightAt(center.x,center.z)===null){root.remove(object);continue;}
+  object.traverse(o=>{if(o.isMesh){o.receiveShadow=true;o.castShadow=size.y>5;if(o.material.map)o.material.map.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}});
+  if(size.y>5){
+   scene.attach(object);const base=object.getWorldPosition(new THREE.Vector3());
+   // Leaf cards can have an offset origin; center the gameplay trunk on their footprint.
+   const pos=new THREE.Vector3(center.x,heightAt(center.x,center.z),center.z);
+   const tree={id:treeId++,mesh:object,pos,hp:3,maxHp:3,radius:0.7,chopped:false};trees.push(tree);obstacles.push({pos:tree.pos,radius:Math.min(0.65,Math.max(0.3,size.x*0.07))});
+  }else{
+   object.traverse(o=>{if(!o.isMesh)return;const key=Math.floor(center.x/20)+','+Math.floor(center.z/20)+','+o.material.uuid;
+    if(!batches.has(key))batches.set(key,{material:o.material,geometries:[]});
+    const geometry=o.geometry.clone().applyMatrix4(o.matrixWorld);const expanded=geometry.index?geometry.toNonIndexed():geometry;
+    for(const key of Object.keys(expanded.attributes))if(!['position','normal','uv'].includes(key))expanded.deleteAttribute(key);
+    batches.get(key).geometries.push(expanded);
+   });root.remove(object);
+  }
+ }
+ for(const {material,geometries}of batches.values()){
+  const geometry=THREE.BufferGeometryUtils.mergeBufferGeometries(geometries,false);if(!geometry)throw Error('Foliage batching failed');
+  const mesh=new THREE.Mesh(geometry,material);mesh.receiveShadow=true;scene.add(mesh);geometries.forEach(g=>g.dispose());
+ }
+ // Spawn near the center of the forest on real ground, outside tree trunks.
+ let spawn=null;
+ for(let r=0;r<35&&!spawn;r+=2)for(let i=0;i<16&&!spawn;i++){const x=Math.cos(i*Math.PI/8)*r,z=Math.sin(i*Math.PI/8)*r,y=heightAt(x,z);if(y!==null&&!obstacles.some(o=>Math.hypot(o.pos.x-x,o.pos.z-z)<o.radius+2))spawn=new THREE.Vector3(x,y,z);}
+ if(!spawn)throw Error('No safe spawn found');player.pos.set(spawn.x,spawn.y+1.7,spawn.z);player.yaw=0;player.pitch=-0.12;camera.position.copy(player.pos);
+ for(let i=0;i<7;i++){const p=randomForestSpot(8);if(p)makeAnimal(p.x,p.z);}
+ forestReady=true;
+ if(window.initializeSurvival)initializeSurvival();document.getElementById('forest-note').textContent='الغابة جاهزة — الأشجار قابلة للقطع والبناء يتبع التضاريس';
+ updateDayNight(0);
+}
+
 /* Character and retargeted Mixamo locomotion */
 let avatar=null,mixer=null,currentAction=null;
 const actions={},cameraRay=new THREE.Raycaster();
@@ -983,16 +980,16 @@ const assetStatus=document.getElementById('asset-status');
 const fbxLoader=new THREE.FBXLoader();
 async function loadAvatar(){
  try{
-  const characterParts=await Promise.all(["character-1.bin","character-2.bin","character-3.bin"].map(async name=>{const response=await fetch('assets/'+name);if(!response.ok)throw new Error('Character download failed: '+response.status);return new Uint8Array(await response.arrayBuffer());}));
+  const characterParts=await Promise.all(["character-1.bin","character-2.bin","character-3.bin"].map(async name=>{const response=await fetch(name);if(!response.ok)throw new Error('Character download failed: '+response.status);return new Uint8Array(await response.arrayBuffer());}));
   const characterBuffer=new Uint8Array(characterParts.reduce((sum,part)=>sum+part.length,0));let characterOffset=0;for(const part of characterParts){characterBuffer.set(part,characterOffset);characterOffset+=part.length;}
-  avatar=fbxLoader.parse(characterBuffer.buffer,'assets/');
+  avatar=fbxLoader.parse(characterBuffer.buffer,'./');
   const box=new THREE.Box3().setFromObject(avatar);const scale=1.8/(box.max.y-box.min.y);avatar.scale.setScalar(scale);
   avatar.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;const materials=Array.isArray(o.material)?o.material:[o.material];materials.forEach(m=>{if(m.map)m.map.encoding=THREE.sRGBEncoding;});}});
   scene.add(avatar);mixer=new THREE.AnimationMixer(avatar);
   const clips={idle:'standing idle 01',forward:'standing walk forward',back:'standing walk back',left:'standing walk left',right:'standing walk right',run:'standing run forward'};
   let failed=0;
   for(const [name,file]of Object.entries(clips)){
-   try{const model=await fbxLoader.loadAsync('assets/'+encodeURIComponent(file)+'.fbx');const clip=model.animations[0];if(!clip)throw new Error('Missing animation');
+   try{const model=await fbxLoader.loadAsync('./'+encodeURIComponent(file)+'.fbx');const clip=model.animations[0];if(!clip)throw new Error('Missing animation');
     for(const track of clip.tracks){if(/Hips.position$/.test(track.name)){for(let i=0;i<track.values.length;i+=3){track.values[i]=track.values[0];track.values[i+2]=track.values[2];}}}
     actions[name]=mixer.clipAction(clip);
    }catch(e){failed++;console.error(e);}
@@ -1002,13 +999,15 @@ async function loadAvatar(){
 }
 function updateAvatar(dt,moving){
  if(!avatar||!mixer)return;
- avatar.position.set(player.pos.x,0,player.pos.z);avatar.rotation.y=player.yaw+Math.PI;
+ avatar.position.set(player.pos.x,player.pos.y-1.7,player.pos.z);avatar.rotation.y=player.yaw+Math.PI;
  let name='idle';if(moving)name=keys.KeyS?'back':keys.KeyA?'left':keys.KeyD?'right':(keys.ShiftLeft||keys.ShiftRight)?'run':'forward';
  const action=actions[name]||actions.idle;
  if(action&&action!==currentAction){action.reset().fadeIn(0.18).play();if(currentAction)currentAction.fadeOut(0.18);currentAction=action;}
  mixer.update(dt);
 }
-loadAvatar();
+const startButton=document.getElementById('start-btn'),continueButton=document.getElementById('continue-btn');
+startButton.disabled=true;continueButton.disabled=true;
+Promise.all([loadAvatar(),loadForest()]).then(()=>{startButton.disabled=false;continueButton.disabled=false;document.getElementById('loading-note').textContent='جاهز — اجمع الخشب والحجر والألياف، ثم افتح الحقيبة بزر Tab.';}).catch(error=>{console.error(error);document.getElementById('loading-note').textContent='تعذر تحميل الغابة. تحقق من الإنترنت واضغط لإعادة المحاولة.';startButton.disabled=false;startButton.textContent='إعادة تحميل';startButton.onclick=()=>location.reload();});
 renderer.outputEncoding=THREE.sRGBEncoding;
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-45,right:45,top:45,bottom:-45,near:0.5,far:140});sun.shadow.bias=-0.0005;
@@ -1025,6 +1024,7 @@ function animate() {
     updateDayNight(dt);
     updateStructures(dt);
     updateParticles(dt);
+    if(window.updateSurvivalSystems)updateSurvivalSystems(dt);
   }
   syncUI();
   renderer.render(scene, camera);
@@ -1038,6 +1038,8 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 </script>
+<script src="survival.js"></script>
 </body>
 </html>
+
 
