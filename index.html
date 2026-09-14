@@ -151,7 +151,6 @@
 <div id="hud-top-left">
   <div class="resource-pill"><span id="wood-count">0</span><span class="icon">🪵</span></div>
   <div class="resource-pill"><span id="food-count">0</span><span class="icon">🍖</span></div>
-  <div class="resource-pill"><span id="arrow-count">0</span><span class="icon">🏹</span></div>
 </div>
 
 <div id="hud-bottom">
@@ -174,12 +173,11 @@
   <p>استيقظت وحيدًا بين الأشجار. اجمع الخشب، اصطد لتأكل، ابنِ نارًا ومأوى، وابقَ حيًا لأطول فترة ممكنة.</p>
   <div class="keys">
     <div class="key">W A S D — تحرك · Shift — ركض · V — إعدادات</div>
-    <div class="key">الفأرة — النظر حولك · كليك — أطلق سهم</div>
-    <div class="key">E — قطع / صيد / ركوب الحصان</div>
+    <div class="key">الفأرة — النظر حولك</div>
+    <div class="key">E — قطع / صيد</div>
     <div class="key">F — أكل</div>
     <div class="key">1 — ابنِ نار (5 خشب)</div>
     <div class="key">2 — ابنِ مأوى (12 خشب)</div>
-    <div class="key">3 — اصنع 3 أسهم (خشب واحد)</div>
     <div class="key">R — نم بجانب المأوى</div>
   </div>
   <div class="btn-row">
@@ -329,24 +327,6 @@ const player = {
 };
 camera.position.copy(player.pos);
 
-/* ============ MOUNT (horse) ============ */
-let mountedHorse = null;
-const HORSE_WALK_SPEED = 8.5;
-const HORSE_RUN_SPEED = 13.5;
-const HORSE_SEAT_HEIGHT = 1.55;
-function mountHorse(h) {
-  mountedHorse = h;
-  showFeedback('ركبت الحصان — E للنزول');
-}
-function dismountHorse() {
-  if (!mountedHorse) return;
-  const h = mountedHorse;
-  mountedHorse = null;
-  const right = new THREE.Vector3(Math.sin(player.yaw + Math.PI/2), 0, Math.cos(player.yaw + Math.PI/2));
-  player.pos.copy(h.pos).addScaledVector(right, 1.6);
-  showFeedback('نزلت عن الحصان');
-}
-
 /* First-person axe view-model (visual feedback, no external model needed) */
 const axeGroup = new THREE.Group();
 const axeHandle = new THREE.Mesh(
@@ -479,58 +459,6 @@ for (let i=0; i<7; i++) {
   makeAnimal(x, z);
 }
 
-/* ============ HORSE (mountable, placed near spawn) ============ */
-let horse = null;
-function makeHorse(x, z) {
-  const group = new THREE.Group();
-  const bodyMat = new THREE.MeshStandardMaterial({ color:0x6b4a30, roughness:0.9 });
-  const maneMat = new THREE.MeshStandardMaterial({ color:0x2e2116, roughness:0.9 });
-
-  const body = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.75, 1.7), bodyMat);
-  body.position.y = 1.05;
-  group.add(body);
-
-  const neck = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.55, 0.4), bodyMat);
-  neck.position.set(0, 1.5, 0.85);
-  neck.rotation.x = -0.5;
-  group.add(neck);
-
-  const head = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.32, 0.55), bodyMat);
-  head.position.set(0, 1.82, 1.25);
-  group.add(head);
-
-  const mane = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.5, 0.7), maneMat);
-  mane.position.set(0, 1.65, 0.75);
-  group.add(mane);
-
-  const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.12, 0.75, 6), maneMat);
-  tail.position.set(0, 0.9, -0.95);
-  tail.rotation.x = 0.5;
-  group.add(tail);
-
-  const legPositions = [[-0.28,0,0.6],[0.28,0,0.6],[-0.28,0,-0.6],[0.28,0,-0.6]];
-  for (const [lx,ly,lz] of legPositions) {
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.13,1.05,6), bodyMat);
-    leg.position.set(lx, 0.52, lz);
-    group.add(leg);
-  }
-  group.position.set(x, 0, z);
-  scene.add(group);
-  return { mesh:group, pos:new THREE.Vector3(x,0,z), radius:1.1 };
-}
-{
-  let hx, hz;
-  do {
-    hx = (rng()-0.5) * 10;
-    hz = (rng()-0.5) * 10 - 4;
-  } while (Math.hypot(hx,hz) < 3 || obstacles.some(o => o.pos.distanceTo(new THREE.Vector3(hx,0,hz)) < o.radius + 1.3));
-  horse = makeHorse(hx, hz);
-}
-function nearestHorse(range) {
-  if (!horse) return null;
-  return player.pos.distanceTo(horse.pos) < range ? horse : null;
-}
-
 /* ============ PARTICLES (chop chips / hunt burst) ============ */
 const particles = [];
 function spawnParticles(pos, color, count, spread) {
@@ -558,116 +486,6 @@ function updateParticles(dt) {
     }
   }
 }
-
-/* ============ BOW & ARROWS ============ */
-const bowGroup = new THREE.Group();
-{
-  const bowMat = new THREE.MeshStandardMaterial({ color:0x5c4632, roughness:0.8 });
-  const stringMat = new THREE.MeshStandardMaterial({ color:0xe8e0d0, roughness:0.5 });
-  const arc = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.018, 6, 12, Math.PI*1.25), bowMat);
-  arc.rotation.z = Math.PI/2 - Math.PI*0.125;
-  bowGroup.add(arc);
-  const string = new THREE.Mesh(new THREE.CylinderGeometry(0.004,0.004,0.58,4), stringMat);
-  string.position.x = -0.02;
-  bowGroup.add(string);
-}
-bowGroup.visible = false;
-scene.add(bowGroup);
-
-function updateBowTransform() {
-  const forward = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
-  const right = new THREE.Vector3(Math.sin(player.yaw + Math.PI/2), 0, Math.cos(player.yaw + Math.PI/2));
-  const pos = player.pos.clone().addScaledVector(forward, 0.35).addScaledVector(right, 0.28);
-  pos.y = 1.15;
-  bowGroup.position.copy(pos);
-  bowGroup.rotation.y = player.yaw;
-  bowGroup.visible = !mountedHorse && state.started && !state.gameOver;
-}
-
-const arrows = [];
-const ARROW_SPEED = 24;
-const ARROW_GRAVITY = 3.2;
-const ARROW_LIFETIME = 3.5;
-let bowCooldown = 0;
-
-function shootArrow() {
-  if (bowCooldown > 0) return;
-  if (state.arrows <= 0) {
-    showFeedback('ما عندك أسهم — اضغط 3 لصناعة أسهم (يحتاج خشب)');
-    return;
-  }
-  state.arrows -= 1;
-  bowCooldown = 0.45;
-
-  const dir = new THREE.Vector3(
-    -Math.sin(player.yaw) * Math.cos(player.pitch),
-    Math.sin(player.pitch),
-    -Math.cos(player.yaw) * Math.cos(player.pitch)
-  ).normalize();
-
-  const shaft = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.018, 0.018, 0.55, 5),
-    new THREE.MeshStandardMaterial({ color:0x3a2a1c })
-  );
-  const tip = new THREE.Mesh(
-    new THREE.ConeGeometry(0.035, 0.12, 5),
-    new THREE.MeshStandardMaterial({ color:0x8a8a8a, metalness:0.4 })
-  );
-  tip.position.y = 0.33;
-  const arrowMesh = new THREE.Group();
-  arrowMesh.add(shaft);
-  arrowMesh.add(tip);
-  arrowMesh.position.copy(player.pos).addScaledVector(dir, 0.6);
-  arrowMesh.position.y = 1.2;
-  arrowMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir);
-  scene.add(arrowMesh);
-
-  arrows.push({ mesh:arrowMesh, vel:dir.clone().multiplyScalar(ARROW_SPEED), life:ARROW_LIFETIME });
-  Audio.build(); // reuse a short synthesized twang-ish sound
-}
-
-function updateArrows(dt) {
-  if (bowCooldown > 0) bowCooldown -= dt;
-  for (let i=arrows.length-1; i>=0; i--) {
-    const a = arrows[i];
-    a.vel.y -= ARROW_GRAVITY * dt;
-    a.mesh.position.addScaledVector(a.vel, dt);
-    a.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), a.vel.clone().normalize());
-    a.life -= dt;
-
-    let hit = false;
-    for (const animal of animals) {
-      if (a.mesh.position.distanceTo(new THREE.Vector3(animal.pos.x, 0.5, animal.pos.z)) < 0.7) {
-        huntAnimal(animal);
-        hit = true;
-        break;
-      }
-    }
-    if (!hit && (a.life <= 0 || a.mesh.position.y <= 0)) hit = true;
-
-    if (hit) {
-      scene.remove(a.mesh);
-      arrows.splice(i, 1);
-    }
-  }
-}
-
-function craftArrows() {
-  if (state.wood < 1) {
-    showFeedback('تحتاج خشب واحد على الأقل لصناعة الأسهم');
-    return;
-  }
-  state.wood -= 1;
-  state.arrows += 3;
-  Audio.build();
-  showFeedback('صنعت 3 أسهم');
-}
-
-document.addEventListener('mousedown', (e) => {
-  if (e.button !== 0) return;
-  if (!state.started || state.gameOver || settingsOpen || !pointerLocked) return;
-  shootArrow();
-});
 
 /* ============ CRAFTING / STRUCTURES ============ */
 const RECIPES = {
@@ -782,7 +600,7 @@ function isNearCampfire(range) {
 /* ============ STATE ============ */
 const state = {
   started:false, gameOver:false,
-  wood:0, food:0, arrows:6,
+  wood:0, food:0,
   energy:100, hunger:0,
   dayTime: 0.25,
   survivedSeconds: 0
@@ -791,7 +609,6 @@ const state = {
 const ui = {
   wood: document.getElementById('wood-count'),
   food: document.getElementById('food-count'),
-  arrows: document.getElementById('arrow-count'),
   energyFill: document.getElementById('energy-fill'),
   hungerFill: document.getElementById('hunger-fill'),
   prompt: document.getElementById('prompt'),
@@ -808,7 +625,7 @@ const SAVE_KEY = 'forestSurvivalSave_v1';
 function saveGame() {
   if (!state.started || state.gameOver) return;
   const data = {
-    wood: state.wood, food: state.food, arrows: state.arrows,
+    wood: state.wood, food: state.food,
     energy: state.energy, hunger: state.hunger,
     dayTime: state.dayTime, survivedSeconds: state.survivedSeconds,
     playerX: player.pos.x, playerZ: player.pos.z, yaw: player.yaw,
@@ -836,7 +653,6 @@ function loadGame() {
 
   state.wood = data.wood ?? 0;
   state.food = data.food ?? 0;
-  state.arrows = data.arrows ?? 6;
   state.energy = data.energy ?? 100;
   state.hunger = data.hunger ?? 0;
   state.dayTime = data.dayTime ?? 0.25;
@@ -963,17 +779,10 @@ function huntAnimal(a) {
 window.addEventListener('keydown', (e) => {
   if (!state.started || state.gameOver || settingsOpen || e.repeat) return;
   if (e.code === 'KeyE') {
-    if (mountedHorse) {
-      dismountHorse();
-    } else {
-      const near = findNearestInteractable();
-      if (near) {
-        if (near.type === 'tree') chopTree(near.obj);
-        else huntAnimal(near.obj);
-      } else {
-        const h = nearestHorse(3.5);
-        if (h) mountHorse(h);
-      }
+    const near = findNearestInteractable();
+    if (near) {
+      if (near.type === 'tree') chopTree(near.obj);
+      else huntAnimal(near.obj);
     }
   }
   if (e.code === 'KeyF') {
@@ -986,7 +795,6 @@ window.addEventListener('keydown', (e) => {
   }
   if (e.code === 'Digit1') buildStructure('campfire');
   if (e.code === 'Digit2') buildStructure('shelter');
-  if (e.code === 'Digit3') craftArrows();
   if (e.code === 'KeyR') {
     const shelter = nearestShelter(3.2);
     if (shelter) {
@@ -1048,21 +856,12 @@ function updatePlayer(dt) {
   if (keys['KeyA']) move.sub(right);
 
   const isMoving = move.lengthSq() > 0;
-  const running = keys.ShiftLeft || keys.ShiftRight;
-  let speed;
-  if (mountedHorse) {
-    speed = running ? HORSE_RUN_SPEED : HORSE_WALK_SPEED;
-  } else {
-    speed = player.speed * (running ? 1.5 : 1);
-  }
-  const effectiveRadius = mountedHorse ? 0.95 : player.radius;
-
   if (isMoving) {
-    move.normalize().multiplyScalar(speed * dt);
+    move.normalize().multiplyScalar(player.speed * (keys.ShiftLeft || keys.ShiftRight ? 1.5 : 1) * dt);
     const next = player.pos.clone().add(move);
     let blocked = false;
     for (const o of obstacles) {
-      if (o.pos.distanceTo(new THREE.Vector3(next.x,0,next.z)) < (o.radius + effectiveRadius)) {
+      if (o.pos.distanceTo(new THREE.Vector3(next.x,0,next.z)) < (o.radius + player.radius)) {
         blocked = true; break;
       }
     }
@@ -1075,14 +874,8 @@ function updatePlayer(dt) {
     footstepTimer -= dt;
     if (footstepTimer <= 0) {
       Audio.footstep();
-      footstepTimer = mountedHorse ? 0.22 : 0.42;
+      footstepTimer = 0.42;
     }
-  }
-
-  if (mountedHorse) {
-    mountedHorse.mesh.position.set(player.pos.x, 0, player.pos.z);
-    mountedHorse.mesh.rotation.y = player.yaw + Math.PI;
-    mountedHorse.pos.set(player.pos.x, 0, player.pos.z);
   }
 
   camera.position.set(player.pos.x, player.pos.y, player.pos.z);
@@ -1090,14 +883,12 @@ function updatePlayer(dt) {
   camera.rotation.y = player.yaw;
   camera.rotation.x = player.pitch;
   updateAvatar(dt,isMoving);
-  updateBowTransform();
-  axeGroup.visible=preferences.perspective==='first' && !mountedHorse;
+  axeGroup.visible=preferences.perspective==='first';
   if(avatar)avatar.visible=preferences.perspective==='third';
   if(preferences.perspective==='third'){
-    const seatHeight = mountedHorse ? HORSE_SEAT_HEIGHT + 0.4 : 1.45;
-    const target=new THREE.Vector3(player.pos.x,seatHeight,player.pos.z);
+    const target=new THREE.Vector3(player.pos.x,1.45,player.pos.z);
     const back=new THREE.Vector3(0,0,1).applyEuler(camera.rotation);
-    let distance=mountedHorse ? 5.8 : 4.3;
+    let distance=4.3;
     cameraRay.set(target,back);
     const hits=cameraRay.intersectObjects([...trees.filter(t=>!t.chopped).map(t=>t.mesh),...structures.map(t=>t.mesh),ground],true);
     if(hits.length)distance=Math.max(0.25,Math.min(distance,hits[0].distance-0.25));
@@ -1118,7 +909,6 @@ function updateSurvival(dt) {
   state.hunger = Math.min(100, state.hunger + dt * 1.4);
   let drain = state.hunger >= 100 ? 6 : 1.1;
   if (isNearCampfire(5)) drain = Math.max(0, drain - 1.6); // fire slows the drain, more so at night
-  if (mountedHorse) drain = Math.max(0, drain - 0.3); // riding rests your legs a bit
   state.energy = Math.max(0, state.energy - dt * drain);
   state.survivedSeconds += dt;
 
@@ -1162,26 +952,19 @@ function updateStructures(dt) {
 function syncUI() {
   ui.wood.textContent = state.wood;
   ui.food.textContent = state.food;
-  ui.arrows.textContent = state.arrows;
   ui.energyFill.style.width = state.energy + '%';
   ui.hungerFill.style.width = state.hunger + '%';
 
-  const near = mountedHorse ? null : findNearestInteractable();
-  if (mountedHorse && !state.gameOver) {
-    ui.prompt.style.opacity = '1';
-    ui.prompt.textContent = 'اضغط E للنزول عن الحصان';
-  } else if (near && !state.gameOver) {
+  const near = findNearestInteractable();
+  if (near && !state.gameOver) {
     ui.prompt.style.opacity = '1';
     ui.prompt.textContent = near.type === 'tree' ? 'اضغط E لقطع الشجرة' : 'اضغط E للصيد';
   } else if (state.food > 0 && state.hunger > 35 && !state.gameOver) {
     ui.prompt.style.opacity = '1';
     ui.prompt.textContent = 'اضغط F لتأكل';
-  } else if (!mountedHorse && nearestShelter(3.2) && !state.gameOver) {
+  } else if (nearestShelter(3.2) && !state.gameOver) {
     ui.prompt.style.opacity = '1';
     ui.prompt.textContent = 'اضغط R للنوم حتى الصباح';
-  } else if (!mountedHorse && nearestHorse(3.5) && !state.gameOver) {
-    ui.prompt.style.opacity = '1';
-    ui.prompt.textContent = 'اضغط E لركوب الحصان';
   } else {
     ui.prompt.style.opacity = '0';
   }
@@ -1189,7 +972,6 @@ function syncUI() {
   const hints = [];
   if (state.wood >= RECIPES.campfire.cost) hints.push('1 = ابنِ نار');
   if (state.wood >= RECIPES.shelter.cost) hints.push('2 = ابنِ مأوى');
-  if (state.wood >= 1) hints.push('3 = اصنع أسهم');
   ui.buildHint.textContent = hints.join('   •   ');
   ui.buildHint.style.opacity = (hints.length && !state.gameOver) ? '0.9' : '0';
 }
@@ -1220,14 +1002,6 @@ async function loadAvatar(){
 }
 function updateAvatar(dt,moving){
  if(!avatar||!mixer)return;
- if(mountedHorse){
-   avatar.position.set(player.pos.x,HORSE_SEAT_HEIGHT,player.pos.z);
-   avatar.rotation.y=player.yaw+Math.PI;
-   const action=actions.idle;
-   if(action&&action!==currentAction){action.reset().fadeIn(0.18).play();if(currentAction)currentAction.fadeOut(0.18);currentAction=action;}
-   mixer.update(dt);
-   return;
- }
  avatar.position.set(player.pos.x,0,player.pos.z);avatar.rotation.y=player.yaw+Math.PI;
  let name='idle';if(moving)name=keys.KeyS?'back':keys.KeyA?'left':keys.KeyD?'right':(keys.ShiftLeft||keys.ShiftRight)?'run':'forward';
  const action=actions[name]||actions.idle;
@@ -1251,7 +1025,6 @@ function animate() {
     updateDayNight(dt);
     updateStructures(dt);
     updateParticles(dt);
-    updateArrows(dt);
   }
   syncUI();
   renderer.render(scene, camera);
