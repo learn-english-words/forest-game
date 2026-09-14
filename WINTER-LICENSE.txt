@@ -1,0 +1,5 @@
+Trailer Park in Winter
+Author: Air Digital Photogrammetry (https://sketchfab.com/AirDigitalca)
+Source: https://sketchfab.com/3d-models/trailer-park-in-winter-ddc3a82a23674e2a99073c3394997e30
+License: CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+Changes: recentered and scaled for gameplay; navigation sampling, collision approximation, lighting and snow added.
